@@ -23,10 +23,12 @@ jobs:
         with:
           node-version: '18'
       
-      - name: Install Python linting tools
+      - name: Install Python linting tools and project dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pylint
+          pip install -r api/requirements.txt
+          pip install -r worker/requirements.txt
       
       - name: Lint Python code
         run: |
