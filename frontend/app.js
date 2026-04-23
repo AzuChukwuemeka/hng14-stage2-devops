@@ -1,6 +1,9 @@
-const express = require('express');
-const axios = require('axios');
-const path = require('path');
+import express from 'express';
+import axios from 'axios';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 const API_URL = process.env.API_URL || "http://localhost:8000";
@@ -29,3 +32,5 @@ app.get('/status/:id', async (req, res) => {
 app.listen(3000, () => {
   console.log('Frontend running on port 3000');
 });
+
+export default app;
