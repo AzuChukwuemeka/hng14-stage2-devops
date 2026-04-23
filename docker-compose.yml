@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ${REDIS_CONTAINER_NAME:-redis}
+    # Redis NOT exposed to host - internal only
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "-p", "${REDIS_PORT:-6379}", "ping"]
+      interval: ${REDIS_HC_INTERVAL:-30s}
+      timeout: ${REDIS_HC_TIMEOUT:-10s}
+      retries: ${REDIS_HC_RETRIES:-3}
+      start_period: ${REDIS_HC_START_PERIOD:-5s}
+    networks:
+      - ${NETWORK_NAME:-app-network}
+    volumes:
+      - redis_data:/data
+    restart: ${RESTART_POLICY:-unless-stopped}
+    deploy:
+      resources:
+        limits:
+          cpus: ${REDIS_CPU_LIMIT:-0.5}
+          memory: ${REDIS_MEMORY_LIMIT:-256M}
+        reservations:
+          cpus: ${REDIS_CPU_RESERVE:-0.25}
+          memory: ${REDIS_MEMORY_RESERVE:-128M}
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: ${API_CONTAINER_NAME:-api}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ${NETWORK_NAME:-app-network}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    deploy:
+      resources:
+        limits:
+          cpus: ${API_CPU_LIMIT:-1.0}
+          memory: ${API_MEMORY_LIMIT:-512M}
+        reservations:
+          cpus: ${API_CPU_RESERVE:-0.5}
+          memory: ${API_MEMORY_RESERVE:-256M}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ${FRONTEND_CONTAINER_NAME:-frontend}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      API_URL: ${API_URL:-http://api:8000}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ${NETWORK_NAME:-app-network}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    deploy:
+      resources:
+        limits:
+          cpus: ${FRONTEND_CPU_LIMIT:-0.5}
+          memory: ${FRONTEND_MEMORY_LIMIT:-256M}
+        reservations:
+          cpus: ${FRONTEND_CPU_RESERVE:-0.25}
+          memory: ${FRONTEND_MEMORY_RESERVE:-128M}
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: ${WORKER_CONTAINER_NAME:-worker}
+    environment:
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ${NETWORK_NAME:-app-network}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    deploy:
+      resources:
+        limits:
+          cpus: ${WORKER_CPU_LIMIT:-0.5}
+          memory: ${WORKER_MEMORY_LIMIT:-256M}
+        reservations:
+          cpus: ${WORKER_CPU_RESERVE:-0.25}
+          memory: ${WORKER_MEMORY_RESERVE:-128M}
+
+networks:
+  app-network:
+    driver: bridge
+    name: ${NETWORK_NAME:-app-network}
+
+volumes:
+  redis_data:
+    name: ${REDIS_VOLUME_NAME:-redis_data}
