@@ -37,11 +37,13 @@ jobs:
       
       - name: Install Node dependencies
         working-directory: frontend
-        run: npm install
+        run: |
+          npm install
+          npm install --save-dev eslint @eslint/js
       
       - name: Lint JavaScript code
         working-directory: frontend
-        run: npm run lint || npx eslint . --max-warnings=0
+        run: npx eslint . --max-warnings=0
       
       - name: Install Hadolint
         run: |
