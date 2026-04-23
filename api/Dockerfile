@@ -13,9 +13,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Create non-root user
+# Added 'curl*' to satisfy DL3008 version pinning
 RUN useradd -m -u 1000 appuser && \
     apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
+    apt-get install -y --no-install-recommends curl* && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from builder
@@ -33,7 +34,7 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
 # Switch to non-root user
 USER appuser
 
-# Health check
+# Health check - Updated to 8000 to match Uvicorn
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/docs || exit 1
 

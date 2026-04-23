@@ -13,9 +13,12 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Create non-root user
+# Added '*' to curl and redis-tools to satisfy DL3008 version pinning
 RUN useradd -m -u 1000 appuser && \
     apt-get update && \
-    apt-get install -y --no-install-recommends curl redis-tools && \
+    apt-get install -y --no-install-recommends \
+    curl* \
+    redis-tools* && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from builder

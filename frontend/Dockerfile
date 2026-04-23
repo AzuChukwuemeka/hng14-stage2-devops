@@ -13,9 +13,10 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Create non-root user
+# Added '=~8' to curl to satisfy DL3018 version pinning
 RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
-    apk add --no-cache curl
+    apk add --no-cache curl=~8
 
 # Copy node modules from builder
 COPY --from=builder --chown=appuser:appuser /build/node_modules ./node_modules

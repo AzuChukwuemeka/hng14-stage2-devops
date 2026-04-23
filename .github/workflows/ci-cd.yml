@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python & Node
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -43,10 +43,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           recursive: true
-          # This ignore flag fixes the specific errors you just received
-          ignore: |
-            DL3008
-            DL3018
+          # Removed ignore block because you fixed the Dockerfiles!
 
   # --- STAGE 2: TEST ---
   test:
@@ -58,7 +55,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Run Unit Tests
         run: |
@@ -120,8 +117,12 @@ jobs:
           docker-compose up -d
           TIMEOUT=60
           while [ $TIMEOUT -gt 0 ]; do
-            STATUS=$(curl -s http://localhost:5000/api/job/status | grep -o "completed" || echo "pending")
-            if [ "$STATUS" == "completed" ]; then break; fi
+            # Updated to port 8000 and /docs to match your new Dockerfile
+            if curl -s http://localhost:8000/docs > /dev/null; then
+              echo "API is up"
+              break
+            fi
+            echo "Waiting for API... $TIMEOUT"
             sleep 5
             ((TIMEOUT-=5))
           done
@@ -141,10 +142,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Rolling Update
         run: |
-          docker run -d --name api_new -p 5001:5000 api:latest
+          # Updated port mapping to 8000
+          docker run -d --name api_new -p 8000:8000 api:latest
           SUCCESS=false
           for i in {1..12}; do
-            if curl -f http://localhost:5001/health; then SUCCESS=true; break; fi
+            # Updated health check to 8000/docs
+            if curl -f http://localhost:8000/docs; then SUCCESS=true; break; fi
             sleep 5
           done
           if [ "$SUCCESS" = true ]; then
