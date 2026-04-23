@@ -1,4 +1,4 @@
-# HNG14 Stage 2 DevOps - Complete Stack
+# HNG14 Stage 2 DevOps - Devops Task for Stage 2 Promotion
 
 A full-stack application with API, Frontend, Worker services orchestrated with Docker Compose and automated CI/CD via GitHub Actions.
 
@@ -20,7 +20,7 @@ Before bringing up the stack, ensure you have the following installed:
 - **Docker Compose** (v1.29+) - Usually comes with Docker Desktop
 - **Git** (v2.30+) - [Install Git](https://git-scm.com/downloads)
 
-### Verify Installation
+### Verify Installation same commands apply to a windows computer as bash cause of similarity of commands of those tools
 ```bash
 docker --version
 docker-compose --version
@@ -189,15 +189,63 @@ All services can be configured via `.env` file. See `.env.example` for all avail
 
 #### Key Variables
 
-| Variable | Default | Service | Purpose |
-|----------|---------|---------|---------|
-| `REDIS_HOST` | redis | API, Worker | Redis service hostname |
-| `REDIS_PORT` | 6379 | API, Worker | Redis service port |
-| `API_URL` | http://localhost:8000 | Frontend | Backend API endpoint |
-| `API_PORT` | 8000 | API | Exposed port for API |
-| `API_CONTAINER_NAME` | api | Docker | Container name |
-| `NETWORK_NAME` | app-network | Docker | Docker network name |
-| `RESTART_POLICY` | unless-stopped | Docker | Container restart policy |
+Application Service Variables
+REDIS_HOST
+
+Default: redis
+
+Services: API, Worker
+
+Purpose: Defines the hostname used to connect to the Redis service.
+
+REDIS_PORT
+
+Default: 6379
+
+Services: API, Worker
+
+Purpose: Defines the communication port for the Redis service.
+
+API_URL
+
+Default: http://localhost:8000
+
+Services: Frontend
+
+Purpose: The endpoint the frontend uses to communicate with the Backend API.
+
+API_PORT
+
+Default: 8000
+
+Services: API
+
+Purpose: The specific port exposed by the API service.
+
+Docker & Infrastructure Settings
+API_CONTAINER_NAME
+
+Default: api
+
+Services: Docker
+
+Purpose: Sets the specific identifier for the API container.
+
+NETWORK_NAME
+
+Default: app-network
+
+Services: Docker
+
+Purpose: The name of the isolated virtual network for container communication.
+
+RESTART_POLICY
+
+Default: unless-stopped
+
+Services: Docker
+
+Purpose: Instructs Docker to automatically restart containers unless they are manually shut down.
 
 ### Creating Custom .env File
 
@@ -206,7 +254,7 @@ All services can be configured via `.env` file. See `.env.example` for all avail
 cp .env.example .env
 
 # Edit with your values
-nano .env
+vi .env
 ```
 
 Example `.env` customization:
@@ -220,39 +268,33 @@ API_CONTAINER_NAME=my-api
 
 After running `docker-compose up -d`, you should see:
 
-✅ **All Services Running**
+**All Services Running**
 ```bash
-$ docker-compose ps
-NAME        COMMAND                  SERVICE     STATUS      PORTS
-redis       redis-server             redis       Up          
-api         uvicorn main:app --ho... api         Up          0.0.0.0:8000->8000/tcp
-frontend    node app.js              frontend    Up          0.0.0.0:3000->3000/tcp
-worker      python worker.py         worker      Up
-```
+$ docker-compose ps to see if all services are running```
 
-✅ **API Health Check**
+**API Health Check**
 ```bash
 $ curl http://localhost:8000/health
 {"status":"ok"}
 ```
 
-✅ **Redis Connectivity**
+**Redis Connectivity**
 ```bash
 $ docker-compose exec redis redis-cli ping
 PONG
 ```
 
-✅ **Frontend Accessible**
+**Frontend Accessible**
 - Open browser: http://localhost:3000
 - Should see job submission form
 
-✅ **Worker Processing**
+**Worker Processing**
 ```bash
 $ docker-compose logs worker
 # Should show: "Worker started", "Listening for jobs", etc.
 ```
 
-✅ **No Error Logs**
+**No Error Logs**
 ```bash
 $ docker-compose logs --tail=20
 # Check for any ERROR or CRITICAL messages
@@ -429,11 +471,3 @@ act
 2. Review service logs: `docker-compose logs <service>`
 3. Check GitHub Issues for the project
 4. Ensure all prerequisites are installed and up to date
-
-## License
-
-[Your License Here]
-
-## Contributing
-
-[Your Contributing Guidelines Here]
